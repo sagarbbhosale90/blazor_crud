@@ -41,12 +41,21 @@ namespace BlazorApp_Crud.Repository
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception("Failed to fetch products from GraphQL API.");
+                throw new MyGrpahQlExcepection("Failed to fetch products from GraphQL API.");
             }
 
-            var result = response.Content.ReadFromJsonAsync<List<Products>>().GetAwaiter().GetResult() ?? [];
+            GraphQLResponse<string>? graphQLResponse = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-            return result.AsQueryable();
+            if (graphQLResponse?.Errors != null && graphQLResponse.Errors.Length > 0)
+            {
+                // handle GraphQL errors
+                throw new MyGrpahQlExcepection(
+                    string.Join("; ", graphQLResponse.Errors.Select(e => e.Message))
+                );
+            }
+
+
+            return result.Data?.AsQueryable();
         }
 
         public Task<Products?> GetProductByIdAsync(int productId)
