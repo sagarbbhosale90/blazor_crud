@@ -1,0 +1,114 @@
+﻿@page "/products/create"
+@using BlazorApp_Crud.Repository
+@using Microsoft.EntityFrameworkCore
+@using BlazorApp_Crud.Model
+@inject IProductRepository ProductRepository
+@inject NavigationManager NavigationManager
+@implements IDisposable
+@rendermode InteractiveServer
+
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>Products</h2>
+<hr />
+<div class="row">
+	<div class="col-md-4">
+		<EditForm method="post" OnValidSubmit="AddProducts" FormName="create" Enhance EditContext="editContext">
+			<DataAnnotationsValidator />
+			<ValidationSummary class="text-danger" role="alert" />
+			<div class="mb-3">
+				<label for="productname" class="form-label">ProductName:</label>
+				<InputText id="productname" @bind-Value="Products.ProductName" class="form-control" aria-required="true" />
+				<ValidationMessage For="() => Products.ProductName" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="price" class="form-label">Price:</label>
+				<InputNumber id="price" @bind-Value="Products.Price" class="form-control" />
+				<ValidationMessage For="() => Products.Price" class="text-danger" />
+			</div>
+			<div class="mb-3">
+				<label for="quantity" class="form-label">Quantity:</label>
+				<InputNumber id="quantity" @bind-Value="Products.Quantity" class="form-control" />
+				<ValidationMessage For="() => Products.Quantity" class="text-danger" />
+			</div>
+			<button type="submit" class="btn btn-primary">Create</button>
+		</EditForm>
+	</div>
+</div>
+<br />
+
+<div>
+	<a href="/products">Back to List</a>
+</div>
+
+@code {
+
+	[SupplyParameterFromForm]
+	private Products Products { get; set; }
+
+	private ValidationMessageStore? messageStore;
+	private EditContext? editContext;
+
+	protected override void OnInitialized()
+	{
+		if (Products == null)
+		{
+			Products = new Products()
+			{
+				ProductName = string.Empty,
+				Price = 0,
+				ProductId = 0,
+				Quantity = 0
+			};
+		}
+
+		editContext = new(Products);
+		editContext.OnValidationRequested += HandleValidationRequested;
+		editContext.OnFieldChanged += (sender, args) =>
+		{
+			// Clear validation messages when a field changes
+			messageStore?.Clear(args.FieldIdentifier);
+		};
+
+		messageStore = new(editContext);
+	}
+
+	private void HandleValidationRequested(object? sender,
+				ValidationRequestedEventArgs args)
+	{
+		messageStore?.Clear();
+
+		var product = ProductRepository.GetProductByName(Products.ProductName);
+
+		// Custom validation logic
+		if (product != null)
+		{
+			messageStore?.Add(() => Products.ProductName, "Product Name alredy exists.");
+		}
+	}
+
+	// To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+	private async Task AddProducts()
+	{
+		// Run built-in validation
+		bool isValid = editContext.Validate();
+
+		if (isValid)
+		{
+			await ProductRepository.AddProductAsync(Products);
+
+			NavigationManager.NavigateTo("/products");
+		}
+	}
+
+	public void Dispose()
+	{
+		if (editContext is not null)
+		{
+			editContext.OnValidationRequested -= HandleValidationRequested;
+		}
+	}
+}

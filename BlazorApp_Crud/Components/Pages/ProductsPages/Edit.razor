@@ -1,0 +1,96 @@
+﻿@page "/products/edit"
+@using BlazorApp_Crud.Repository
+@using Microsoft.EntityFrameworkCore
+@using BlazorApp_Crud.Model
+@inject IProductRepository ProductRepository
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>Products</h2>
+<hr />
+@if (Products is null)
+{
+	<p><em>Loading...</em></p>
+}
+else
+{
+	<div class="row">
+		<div class="col-md-4">
+			<EditForm method="post" Model="Products" OnValidSubmit="UpdateProducts" FormName="edit" Enhance>
+				<DataAnnotationsValidator />
+				<ValidationSummary role="alert" />
+				<input type="hidden" name="Products.ProductId" value="@Products.ProductId" />
+				<div class="mb-3">
+					<label for="productname" class="form-label">ProductName:</label>
+					<InputText id="productname" @bind-Value="Products.ProductName" class="form-control" aria-required="true" />
+					<ValidationMessage For="() => Products.ProductName" class="text-danger" />
+				</div>
+				<div class="mb-3">
+					<label for="price" class="form-label">Price:</label>
+					<InputNumber id="price" @bind-Value="Products.Price" class="form-control" />
+					<ValidationMessage For="() => Products.Price" class="text-danger" />
+				</div>
+				<div class="mb-3">
+					<label for="quantity" class="form-label">Quantity:</label>
+					<InputNumber id="quantity" @bind-Value="Products.Quantity" class="form-control" />
+					<ValidationMessage For="() => Products.Quantity" class="text-danger" />
+				</div>
+				<button type="submit" class="btn btn-primary">Save</button>
+			</EditForm>
+		</div>
+	</div>
+}
+
+<div>
+	<a href="/products">Back to List</a>
+</div>
+
+@code {
+	[SupplyParameterFromQuery]
+	private int ProductId { get; set; }
+
+	[SupplyParameterFromForm]
+	private Products? Products { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+
+		Products ??= await ProductRepository.GetProductByIdAsync(ProductId);
+
+		if (Products is null)
+		{
+			NavigationManager.NavigateTo("notfound");
+		}
+	}
+
+	// To protect from overposting attacks, enable the specific properties you want to bind to.
+	// For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+	private async Task UpdateProducts()
+	{
+		try
+		{
+			await ProductRepository.UpdateProductAsync(Products!);
+		}
+		catch (DbUpdateConcurrencyException)
+		{
+			if (!ProductsExists(Products!.ProductId))
+			{
+				NavigationManager.NavigateTo("notfound");
+			}
+			else
+			{
+				throw;
+			}
+		}
+		
+		NavigationManager.NavigateTo("/products");
+	}
+
+	private bool ProductsExists(int productid)
+	{
+		return ProductRepository.GetProductByIdAsync(productid) is not null;
+	}
+}

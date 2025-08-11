@@ -1,0 +1,27 @@
+﻿@page "/products/{ProductDataSource}"
+@using BlazorApp_Crud.Repository
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using BlazorApp_Crud.Model
+@* @implements IAsyncDisposable *@
+ 
+
+<PageTitle>Index</PageTitle>
+
+<p>
+	<a href="products/create">Create New</a>
+</p>
+
+<QuickGrid Class="table" Items="ProductRepository.GetAllProductsQueryable()">
+	<PropertyColumn Property="products => products.ProductName" />
+	<PropertyColumn Property="products => products.Price" />
+	<PropertyColumn Property="products => products.Quantity" />
+
+	<TemplateColumn Context="products">
+		<a href="@($"products/edit?productid={products.ProductId}")">Edit</a> |
+		<a href="@($"products/details?productid={products.ProductId}")">Details</a> |
+		<a href="@($"products/delete?productid={products.ProductId}")">Delete</a>
+	</TemplateColumn>
+</QuickGrid>
+
+ 

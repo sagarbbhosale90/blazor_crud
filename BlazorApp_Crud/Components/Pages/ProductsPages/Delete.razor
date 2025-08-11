@@ -1,0 +1,64 @@
+﻿@page "/products/delete"
+@using BlazorApp_Crud.Repository
+@using Microsoft.EntityFrameworkCore
+@using BlazorApp_Crud.Model
+@inject IProductRepository ProductRepository
+@inject NavigationManager NavigationManager
+
+<PageTitle>Delete</PageTitle>
+
+<h1>Delete</h1>
+
+<p>Are you sure you want to delete this?</p>
+<div>
+	<h2>Products</h2>
+	<hr />
+	@if (products is null)
+	{
+		<p><em>Loading...</em></p>
+	}
+	else
+	{
+		<dl class="row">
+			<dt class="col-sm-2">ProductName</dt>
+			<dd class="col-sm-10">@products.ProductName</dd>
+		</dl>
+		<dl class="row">
+			<dt class="col-sm-2">Price</dt>
+			<dd class="col-sm-10">@products.Price</dd>
+		</dl>
+		<dl class="row">
+			<dt class="col-sm-2">Quantity</dt>
+			<dd class="col-sm-10">@products.Quantity</dd>
+		</dl>
+		<EditForm method="post" Model="products" OnValidSubmit="DeleteProducts" FormName="delete" Enhance>
+			<button type="submit" class="btn btn-danger" disabled="@(products is null)">Delete</button> |
+			<a href="/products">Back to List</a>
+		</EditForm>
+	}
+</div>
+
+@code {
+	private Products? products;
+
+	[SupplyParameterFromQuery]
+	private int ProductId { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+
+		products = await ProductRepository.GetProductByIdAsync(ProductId);
+
+		if (products is null)
+		{
+			NavigationManager.NavigateTo("notfound");
+		}
+	}
+
+	private async Task DeleteProducts()
+	{
+		await ProductRepository.DeleteProductAsync(ProductId);
+
+		NavigationManager.NavigateTo("/products");
+	}
+}

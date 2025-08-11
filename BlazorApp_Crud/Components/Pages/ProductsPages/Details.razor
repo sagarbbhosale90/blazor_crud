@@ -1,0 +1,51 @@
+﻿@page "/products/details"
+@using BlazorApp_Crud.Repository
+@using Microsoft.EntityFrameworkCore
+@using BlazorApp_Crud.Model
+@inject IProductRepository ProductRepository
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+	<h2>Products</h2>
+	<hr />
+	@if (products is null)
+	{
+		<p><em>Loading...</em></p>
+	}
+	else
+	{
+		<dl class="row">
+			<dt class="col-sm-2">ProductName</dt>
+			<dd class="col-sm-10">@products.ProductName</dd>
+			<dt class="col-sm-2">Price</dt>
+			<dd class="col-sm-10">@products.Price</dd>
+			<dt class="col-sm-2">Quantity</dt>
+			<dd class="col-sm-10">@products.Quantity</dd>
+		</dl>
+		<div>
+			<a href="@($"/products/edit?productid={products.ProductId}")">Edit</a> |
+			<a href="@($"/products")">Back to List</a>
+		</div>
+	}
+</div>
+
+@code {
+	private Products? products;
+
+	[SupplyParameterFromQuery]
+	private int ProductId { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		products = await ProductRepository.GetProductByIdAsync(ProductId);
+
+		if (products is null)
+		{
+			NavigationManager.NavigateTo("notfound");
+		}
+	}
+}
