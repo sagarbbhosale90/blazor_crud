@@ -2,8 +2,7 @@
 @using BlazorApp_Crud.Repository
 @using Microsoft.EntityFrameworkCore
 @using BlazorApp_Crud.Model
-@inject IProductRepository ProductRepository
-@inject NavigationManager NavigationManager
+
 
 <PageTitle>Details</PageTitle>
 
@@ -27,25 +26,9 @@
 			<dd class="col-sm-10">@products.Quantity</dd>
 		</dl>
 		<div>
-			<a href="@($"/products/edit?productid={products.ProductId}")">Edit</a> |
-			<a href="@($"/products")">Back to List</a>
+			<a href="@($"/products/edit?productid={products.ProductId}&datasource={ProductDataSource}")">Edit</a> |
+			<a href="@($"/products/{@ProductDataSource}")">Back to List</a>
 		</div>
 	}
 </div>
-
-@code {
-	private Products? products;
-
-	[SupplyParameterFromQuery]
-	private int ProductId { get; set; }
-
-	protected override async Task OnInitializedAsync()
-	{
-		products = await ProductRepository.GetProductByIdAsync(ProductId);
-
-		if (products is null)
-		{
-			NavigationManager.NavigateTo("notfound");
-		}
-	}
-}
+ 

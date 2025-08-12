@@ -2,8 +2,7 @@
 @using BlazorApp_Crud.Repository
 @using Microsoft.EntityFrameworkCore
 @using BlazorApp_Crud.Model
-@inject IProductRepository ProductRepository
-@inject NavigationManager NavigationManager
+ 
 
 <PageTitle>Delete</PageTitle>
 
@@ -33,32 +32,9 @@
 		</dl>
 		<EditForm method="post" Model="products" OnValidSubmit="DeleteProducts" FormName="delete" Enhance>
 			<button type="submit" class="btn btn-danger" disabled="@(products is null)">Delete</button> |
-			<a href="/products">Back to List</a>
+			<a href="@($"/products/{@ProductDataSource}")">Back to List</a>
 		</EditForm>
 	}
 </div>
 
-@code {
-	private Products? products;
-
-	[SupplyParameterFromQuery]
-	private int ProductId { get; set; }
-
-	protected override async Task OnInitializedAsync()
-	{
-
-		products = await ProductRepository.GetProductByIdAsync(ProductId);
-
-		if (products is null)
-		{
-			NavigationManager.NavigateTo("notfound");
-		}
-	}
-
-	private async Task DeleteProducts()
-	{
-		await ProductRepository.DeleteProductAsync(ProductId);
-
-		NavigationManager.NavigateTo("/products");
-	}
-}
+ 

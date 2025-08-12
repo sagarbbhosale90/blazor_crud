@@ -5,17 +5,17 @@ namespace BlazorOAuthAPI.Mutations
 {
     public class ProductsMutation
     {
-        public async Task<bool> AddProductAsync([Service] IProductRepository product, Products productDetails)
+        public async Task<Products> AddProductAsync([Service] IProductRepository product, Products productDetails)
         {
             return await product.AddProductAsync(productDetails);
         }
 
-        public async Task<bool> UpdateProductAsync([Service] IProductRepository product, Products productDetails)
+        public async Task<Products> UpdateProductAsync([Service] IProductRepository product, Products productDetails)
         {
             return await product.UpdateProductAsync(productDetails);
         }
 
-        public async Task<bool> DeleteProductAsync([Service] IProductRepository product, int productId)
+        public async Task<Products> DeleteProductAsync([Service] IProductRepository product, int productId)
         {
             return await product.DeleteProductAsync(productId);
         }

@@ -6,8 +6,12 @@ namespace BlazorApp_Crud.Components.Pages.ProductsPages
 {
     public partial class Index : ComponentBase
     {
+       
         [Parameter]
         public required string ProductDataSource { get; set; }
+
+        [SupplyParameterFromQuery(Name = "datasource")]
+        public required string ProductDataSource2 { get; set; }
 
         public required IProductRepository ProductRepository { get; set; }
 
@@ -18,11 +22,10 @@ namespace BlazorApp_Crud.Components.Pages.ProductsPages
         {
             if (!Enum.TryParse<DataSourceEnum>(ProductDataSource, out var dataSourceEnum))
             {
-                throw new InvalidOperationException($"Invalid data source: {ProductDataSource}");
+                _ = Enum.TryParse<DataSourceEnum>(ProductDataSource2, out dataSourceEnum);
             }
 
             ProductRepository = ServiceProvider.GetRequiredKeyedService<IProductRepository>(dataSourceEnum);
         }
     }
 }
-    

@@ -28,8 +28,6 @@ builder.Services.AddHttpClient("GraphQLClient", client =>
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
-
-
 //builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 var app = builder.Build();

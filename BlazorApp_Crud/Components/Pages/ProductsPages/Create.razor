@@ -1,13 +1,9 @@
-﻿@page "/products/create"
+﻿@page "/products/create/{ProductDataSource}"
+
 @using BlazorApp_Crud.Repository
 @using Microsoft.EntityFrameworkCore
 @using BlazorApp_Crud.Model
-@inject IProductRepository ProductRepository
-@inject NavigationManager NavigationManager
-@implements IDisposable
-@rendermode InteractiveServer
-
-
+ 
 <PageTitle>Create</PageTitle>
 
 <h1>Create</h1>
@@ -41,74 +37,5 @@
 <br />
 
 <div>
-	<a href="/products">Back to List</a>
+	<a href="@($"products/{@ProductDataSource}")">Back to List</a>
 </div>
-
-@code {
-
-	[SupplyParameterFromForm]
-	private Products Products { get; set; }
-
-	private ValidationMessageStore? messageStore;
-	private EditContext? editContext;
-
-	protected override void OnInitialized()
-	{
-		if (Products == null)
-		{
-			Products = new Products()
-			{
-				ProductName = string.Empty,
-				Price = 0,
-				ProductId = 0,
-				Quantity = 0
-			};
-		}
-
-		editContext = new(Products);
-		editContext.OnValidationRequested += HandleValidationRequested;
-		editContext.OnFieldChanged += (sender, args) =>
-		{
-			// Clear validation messages when a field changes
-			messageStore?.Clear(args.FieldIdentifier);
-		};
-
-		messageStore = new(editContext);
-	}
-
-	private void HandleValidationRequested(object? sender,
-				ValidationRequestedEventArgs args)
-	{
-		messageStore?.Clear();
-
-		var product = ProductRepository.GetProductByName(Products.ProductName);
-
-		// Custom validation logic
-		if (product != null)
-		{
-			messageStore?.Add(() => Products.ProductName, "Product Name alredy exists.");
-		}
-	}
-
-	// To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
-	private async Task AddProducts()
-	{
-		// Run built-in validation
-		bool isValid = editContext.Validate();
-
-		if (isValid)
-		{
-			await ProductRepository.AddProductAsync(Products);
-
-			NavigationManager.NavigateTo("/products");
-		}
-	}
-
-	public void Dispose()
-	{
-		if (editContext is not null)
-		{
-			editContext.OnValidationRequested -= HandleValidationRequested;
-		}
-	}
-}

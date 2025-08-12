@@ -12,7 +12,7 @@ namespace BlazorOAuthAPI.Repository
             _DbFactory = DbFactory;
             _DbContext = _DbFactory.CreateDbContext();
         }
-        public async Task<bool> AddProductAsync(Products product)
+        public async Task<Products> AddProductAsync(Products product)
         {
             try
             {
@@ -20,36 +20,37 @@ namespace BlazorOAuthAPI.Repository
                 var result = await _DbContext.SaveChangesAsync();
                 if (result > 0)
                 {
-                    return true;
+                    return product;
                 }
                 else
                 {
-                    return false;
+                    return product;
                 }
             }
             catch (Exception ex)
             {
-                return false;
+                return product;
             }
         }
 
-        public async Task<bool> DeleteProductAsync(int productId)
+        public async Task<Products> DeleteProductAsync(int productId)
         {
-            var findStudentData = _DbContext.Products.Where(_ => _.ProductId == productId).FirstOrDefault();
-            if (findStudentData != null)
+            var findProduct = _DbContext.Products.Where(_ => _.ProductId == productId).FirstOrDefault();
+            if (findProduct != null)
             {
-                _DbContext.Products.Remove(findStudentData);
+                _DbContext.Products.Remove(findProduct);
                 var result = await _DbContext.SaveChangesAsync();
                 if (result > 0)
                 {
-                    return true;
+                    return findProduct;
                 }
                 else
                 {
-                    return false;
+                    return findProduct;
                 }
             }
-            return false;
+
+            return findProduct;
         }
 
         public async Task<IEnumerable<Products>> GetAllProductsAsync()
@@ -57,12 +58,17 @@ namespace BlazorOAuthAPI.Repository
             return await _DbContext.Products.ToListAsync();
         }
 
-        public Task<Products?> GetProductByIdAsync(int productId)
+        public async Task<Products?> GetProductByIdAsync(int productId)
         {
-            return _DbContext.Products.FirstOrDefaultAsync(_ => _.ProductId == productId);
+            return await _DbContext.Products.FirstOrDefaultAsync(_ => _.ProductId == productId);
         }
 
-        public async Task<bool> UpdateProductAsync(Products product)
+        public async Task<Products?> GetProductByNameAsync(string productName)
+        {
+            return await _DbContext.Products.FirstOrDefaultAsync(_ => _.ProductName == productName);
+        }
+
+        public async Task<Products> UpdateProductAsync(Products product)
         {
             try
             {
@@ -70,16 +76,16 @@ namespace BlazorOAuthAPI.Repository
                 var result = await _DbContext.SaveChangesAsync();
                 if (result > 0)
                 {
-                    return true;
+                    return product;
                 }
                 else
                 {
-                    return false;
+                    return product;
                 }
             }
             catch (Exception ex)
             {
-                return false;
+                return product;
             }
         }
     }

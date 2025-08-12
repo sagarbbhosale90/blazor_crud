@@ -4,18 +4,44 @@ namespace BlazorApp_Crud.Repository
 {
     public class GrpahQLProductRepository : IProductRepository
     {
-
         public IHttpClientFactory _HttpClientFactory { get; set; }
         public HttpClient httpClient { get; set; }
+
         public GrpahQLProductRepository(IHttpClientFactory httpClientFactory)
         {
             _HttpClientFactory = httpClientFactory;
             httpClient = _HttpClientFactory.CreateClient("GraphQLClient");
         }
 
-        public Task<bool> AddProductAsync(Products product)
+        public async Task<bool> AddProductAsync(Products product)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var response = await httpClient.PostAsJsonAsync("graphql", QueryForGrpahQl.BuildAddProductRequest(product));
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new MyGrpahQlExcepection("Failed to fetch products from GraphQL API.");
+                }
+
+                var graphQLResponse = GraphQLResult.HandleGraphQLResponse<Products>(await response.Content.ReadAsStringAsync(), "addProduct");
+
+                if (graphQLResponse?.Errors != null && graphQLResponse.Errors.Count > 0)
+                {
+                    // handle GraphQL errors
+                    throw new MyGrpahQlExcepection(
+                        string.Join("; ", graphQLResponse.Errors.Select(e => e))
+                    );
+                }
+
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+
         }
 
         public Task<bool> DeleteProductAsync(int productId)
@@ -23,16 +49,9 @@ namespace BlazorApp_Crud.Repository
             throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<Products>> GetAllProductsAsync()
+        public Task<IEnumerable<Products>> GetAllProductsAsync()
         {
-            var response = await httpClient.PostAsJsonAsync("graphql", QueryForGrpahQl.GetAllProduct);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new Exception("Failed to fetch products from GraphQL API.");
-            }
-
-            return await response.Content.ReadFromJsonAsync<List<Products>>() ?? [];
+            throw new NotImplementedException();
         }
 
         public IQueryable<Products> GetAllProductsQueryable()
@@ -44,38 +63,89 @@ namespace BlazorApp_Crud.Repository
                 throw new MyGrpahQlExcepection("Failed to fetch products from GraphQL API.");
             }
 
-            GraphQLResponse<string>? graphQLResponse = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            var graphQLResponse = GraphQLResult.HandleGraphQLResponse<List<Products>>(response.Content.ReadAsStringAsync().GetAwaiter().GetResult(), "GetAllProducts");
 
-            if (graphQLResponse?.Errors != null && graphQLResponse.Errors.Length > 0)
+            if (graphQLResponse?.Errors != null && graphQLResponse.Errors.Count > 0)
             {
                 // handle GraphQL errors
                 throw new MyGrpahQlExcepection(
-                    string.Join("; ", graphQLResponse.Errors.Select(e => e.Message))
+                    string.Join("; ", graphQLResponse.Errors.Select(e => e))
                 );
             }
 
-
-            return result.Data?.AsQueryable();
+            return graphQLResponse?.Data?.AsQueryable() ?? new List<Products>().AsQueryable();
         }
 
-        public Task<Products?> GetProductByIdAsync(int productId)
+        public async Task<Products?> GetProductByIdAsync(int productId)
         {
-            throw new NotImplementedException();
+            var response = await httpClient.PostAsJsonAsync("graphql", QueryForGrpahQl.GetProductById(productId));
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new MyGrpahQlExcepection("Failed to fetch products from GraphQL API.");
+            }
+
+            var graphQLResponse = GraphQLResult.HandleGraphQLResponse<Products>(await response.Content.ReadAsStringAsync(), "getByProductId");
+
+            if (graphQLResponse?.Errors != null && graphQLResponse.Errors.Count > 0)
+            {
+                // handle GraphQL errors
+                throw new MyGrpahQlExcepection(
+                    string.Join("; ", graphQLResponse.Errors.Select(e => e))
+                );
+            }
+
+            return graphQLResponse?.Data;
         }
 
-        public Products? GetProductByName(string productName)
+        public async Task<Products?> GetProductByNameAsync(string productName)
         {
-            throw new NotImplementedException();
+            var response = await httpClient.PostAsJsonAsync("graphql", QueryForGrpahQl.GetProductByName(productName));
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new MyGrpahQlExcepection("Failed to fetch products from GraphQL API.");
+            }
+
+            var graphQLResponse = GraphQLResult.HandleGraphQLResponse<Products>(await response.Content.ReadAsStringAsync(), "getByProductName");
+
+            if (graphQLResponse?.Errors != null && graphQLResponse.Errors.Count > 0)
+            {
+                // handle GraphQL errors
+                throw new MyGrpahQlExcepection(
+                    string.Join("; ", graphQLResponse.Errors.Select(e => e))
+                );
+            }
+
+            return graphQLResponse?.Data;
         }
 
-        public Task<Products?> GetProductByNameAsync(string productName)
-        {
-            throw new NotImplementedException();
-        }
 
         public Task<bool> UpdateProductAsync(Products product)
         {
             throw new NotImplementedException();
+        }
+
+        Products? IProductRepository.GetProductByName(string productName)
+        {
+            var response = httpClient.PostAsJsonAsync("graphql", QueryForGrpahQl.GetProductByName(productName)).ConfigureAwait(false).GetAwaiter().GetResult();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new MyGrpahQlExcepection("Failed to fetch products from GraphQL API.");
+            }
+
+            var graphQLResponse = GraphQLResult.HandleGraphQLResponse<Products>(response.Content.ReadAsStringAsync().ConfigureAwait(false).GetAwaiter().GetResult(), "getByProductName");
+
+            if (graphQLResponse?.Errors != null && graphQLResponse.Errors.Count > 0)
+            {
+                // handle GraphQL errors
+                throw new MyGrpahQlExcepection(
+                    string.Join("; ", graphQLResponse.Errors.Select(e => e))
+                );
+            }
+
+            return graphQLResponse?.Data;
         }
     }
 }

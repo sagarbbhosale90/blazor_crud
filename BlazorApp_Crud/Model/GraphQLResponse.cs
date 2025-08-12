@@ -1,18 +1,52 @@
-﻿namespace BlazorApp_Crud.Model
+﻿using Newtonsoft.Json.Linq;
+
+namespace BlazorApp_Crud.Model
 {
-    public class GraphQLResponse<T>
+    public class GraphQLResult<T>
     {
-        public T[]? Data { get; set; }
-        public GraphQLError[]? Errors { get; set; }
+        public bool Success { get; set; }
+        public T Data { get; set; }
+        public List<string> Errors { get; set; } = [];
     }
 
-    public class GraphQLError
+    public static class GraphQLResult
     {
-        public string? Message { get; set; }
-    }
+        public static GraphQLResult<T> HandleGraphQLResponse<T>(string json, string dataField)
+        {
+            try
+            {
+                var result = new GraphQLResult<T>();
 
-    public class MyResponseType
-    {
+                JObject obj = JObject.Parse(json);
 
-    }
+                if (obj["errors"] != null)
+                {
+                    result.Success = false;
+                    foreach (var err in obj["errors"])
+                        result.Errors.Add(err["message"]?.ToString());
+                }
+                else if (obj["data"]?[dataField] != null)
+                {
+                    var token = obj["data"][dataField];
+                    result.Data = token.ToObject<T>(); // parse JSON into requested type
+                    result.Success = true;
+                }
+                else
+                {
+                    result.Success = false;
+                    result.Errors.Add("No matching data or errors found in response.");
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return new GraphQLResult<T>
+                {
+                    Success = false,
+                    Errors = [ex.Message]
+                };
+            }
+        }
+    }   
 }
