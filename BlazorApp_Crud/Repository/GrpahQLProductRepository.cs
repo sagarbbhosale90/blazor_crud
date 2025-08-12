@@ -44,9 +44,35 @@ namespace BlazorApp_Crud.Repository
 
         }
 
-        public Task<bool> DeleteProductAsync(int productId)
+        public async Task<bool> DeleteProductAsync(int productId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var response = await httpClient.PostAsJsonAsync("graphql", QueryForGrpahQl.BuildDeleteProductRequest(productId));
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new MyGrpahQlExcepection("Failed to fetch products from GraphQL API.");
+                }
+
+                var graphQLResponse = GraphQLResult.HandleGraphQLResponse<Products>(await response.Content.ReadAsStringAsync(), "getByProductId");
+
+                if (graphQLResponse?.Errors != null && graphQLResponse.Errors.Count > 0)
+                {
+                    // handle GraphQL errors
+                    throw new MyGrpahQlExcepection(
+                        string.Join("; ", graphQLResponse.Errors.Select(e => e))
+                    );
+                }
+
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+
         }
 
         public Task<IEnumerable<Products>> GetAllProductsAsync()
@@ -121,9 +147,54 @@ namespace BlazorApp_Crud.Repository
         }
 
 
-        public Task<bool> UpdateProductAsync(Products product)
+        public async Task<bool> UpdateProductAsync(Products product)
         {
-            throw new NotImplementedException();
+            try
+            {
+
+                var request = new
+                {
+                    query = @"
+        mutation UpdateProduct($product: ProductsInput!) {
+            updateProduct(productDetails: $product) {
+                productId
+                productName
+                price
+                quantity
+            }
+        }
+    ",
+                    variables = new
+                    {
+                        product = product
+                    }
+                };
+
+                var response = await httpClient.PostAsJsonAsync("graphql", request);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new MyGrpahQlExcepection("Failed to fetch products from GraphQL API.");
+                }
+
+                var graphQLResponse = GraphQLResult.HandleGraphQLResponse<Products>(await response.Content.ReadAsStringAsync(), "updateProduct");
+
+                if (graphQLResponse?.Errors != null && graphQLResponse.Errors.Count > 0)
+                {
+                    // handle GraphQL errors
+                    throw new MyGrpahQlExcepection(
+                        string.Join("; ", graphQLResponse.Errors.Select(e => e))
+                    );
+                }
+
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+
         }
 
         Products? IProductRepository.GetProductByName(string productName)

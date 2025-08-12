@@ -60,7 +60,7 @@ namespace BlazorApp_Crud.Components.Pages.ProductsPages
                 }
             }
 
-            NavigationManager.NavigateTo("/products");
+            NavigationManager.NavigateTo("/products/" + ProductDataSource);
         }
 
         private bool ProductsExists(int productid)

@@ -41,7 +41,7 @@ namespace BlazorApp_Crud.Components.Pages.ProductsPages
         {
             await ProductRepository.DeleteProductAsync(ProductId);
 
-            NavigationManager.NavigateTo("/products");
+            NavigationManager.NavigateTo("/products/" + ProductDataSource);
         }
     }
 }

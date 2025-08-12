@@ -77,5 +77,51 @@
                 }
             };
         }
+
+        public static object BuildUpdateProductRequestAsJson<T>(T productModel)
+        {
+            // serialize model into JSON for payload variable
+            string payloadJson = Newtonsoft.Json.JsonConvert.SerializeObject(productModel);
+
+            return new
+            {
+                query = @"
+            mutation UpdateProduct($payload: String!) {
+                updateProductRawJson(productJson: $payload) {
+                    productId
+                    productName
+                    price
+                    quantity
+                }
+            }
+        ",
+                variables = new
+                {
+                    payload = productModel
+                }
+            };
+        }
+
+        public static object BuildDeleteProductRequest(int productId)
+        {
+            return new
+            {
+                query = @"
+            mutation DeleteProduct($productId: Int!) {
+                deleteProduct(productId: $productId) {
+                    productId
+                    price
+                    quantity
+                    productName
+                }
+            }
+        ",
+                variables = new
+                {
+                    productId = productId
+                }
+            };
+        }
+
     }
 }

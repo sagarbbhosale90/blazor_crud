@@ -3,15 +3,11 @@
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using BlazorApp_Crud.Model
-@* @implements IAsyncDisposable *@
-
-@{
-	string currentDataSet = DataSourceEnum.GrpahQL.ToString();
-}
+ 
 <PageTitle>Index</PageTitle>
 
 <p>
-	<a href="@($"products/create/{currentDataSet}")">Create New</a>
+	<a href="@($"products/create/{ProductDataSource}")">Create New</a>
 </p>
 
 <QuickGrid Class="table" Items="ProductRepository.GetAllProductsQueryable()">
@@ -20,9 +16,9 @@
 	<PropertyColumn Property="products => products.Quantity" />
 
 	<TemplateColumn Context="products">
-		<a href="@($"products/edit?productid={products.ProductId}&datasource={currentDataSet}")">Edit</a> |
-		<a href="@($"products/details?productid={products.ProductId}&datasource={currentDataSet}")">Details</a> |
-		<a href="@($"products/delete?productid={products.ProductId}&datasource={currentDataSet}")">Delete</a>
+		<a href="@($"products/edit?productid={products.ProductId}&datasource={ProductDataSource}")">Edit</a> |
+		<a href="@($"products/details?productid={products.ProductId}&datasource={ProductDataSource}")">Details</a> |
+		<a href="@($"products/delete?productid={products.ProductId}&datasource={ProductDataSource}")">Delete</a>
 	</TemplateColumn>
 </QuickGrid>
 

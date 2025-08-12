@@ -23,6 +23,8 @@ namespace BlazorApp_Crud.Components.Pages.ProductsPages
             if (!Enum.TryParse<DataSourceEnum>(ProductDataSource, out var dataSourceEnum))
             {
                 _ = Enum.TryParse<DataSourceEnum>(ProductDataSource2, out dataSourceEnum);
+
+                ProductDataSource = ProductDataSource2;
             }
 
             ProductRepository = ServiceProvider.GetRequiredKeyedService<IProductRepository>(dataSourceEnum);
